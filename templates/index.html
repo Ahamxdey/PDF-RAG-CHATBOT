@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF RAG Chatbot</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background:
+             linear-gradient(rgba(9, 5, 43, 0.65), rgba(9, 5, 43, 0.65)),
+        url("/static/background.png");
+
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+        
+        url("/static/background.png");
+
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+
+            margin: 0;
+        }
+
+       .container {
+    width: 700px;
+    margin: 50px auto;
+
+    background:
+        linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.35)),
+        url("/static/images.jpg");
+
+    background-size: cover;
+    background-position: center;
+
+    padding: 25px;
+    border-radius: 12px;
+
+    border: 1px solid rgb(255, 254, 254);
+
+    box-shadow: 0 4px 20px rgba(252, 250, 250, 0.99);
+}
+        h1 {
+            text-align: center;
+            color: #f1f1f1;
+        }
+
+        .upload-box {
+            text-align: center;
+            padding: 28px;
+            color: #f1f1f1;
+            border: 2px dashed #aaa;
+            border-radius: 10px;
+        }
+
+        input[type="file"] {
+            margin: 15px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            color: black;
+            cursor: pointer;
+        }
+
+        #chat {
+            margin-top: 25px;
+        }
+
+        .question {
+            background: #e8f0fe;
+            padding: 12px;
+            margin-top: 10px;
+            border-radius: 8px;
+        }
+
+        .answer {
+            background: #f1f1f1;
+            padding: 12px;
+            margin-top: 5px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1> CHART BOT</h1>
+
+    <div class="upload-box">
+        <h3>Upload your PDF</h3>
+
+        <input type="file" id="pdfFile" accept=".pdf">
+
+        <br>
+
+        <button onclick="uploadPDF()">Upload PDF</button>
+
+        <p id="uploadStatus"></p>
+    </div>
+
+    <div id="chat">
+
+        <input
+            type="text"
+            id="question"
+            placeholder="Ask a question from your PDF..."
+            style="width: 70%; padding: 10px;"
+        >
+
+        <button onclick="askQuestion()">Ask</button>
+
+        <div id="messages"></div>
+
+    </div>
+
+</div>
+
+<script>
+
+async function uploadPDF() {
+
+    const file = document.getElementById("pdfFile").files[0];
+
+    if (!file) {
+        alert("Please select a PDF.");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("pdf", file);
+
+    document.getElementById("uploadStatus").innerText =
+        "Uploading PDF...";
+
+    const response = await fetch("/upload", {
+        method: "POST",
+        body: formData
+    });
+
+    const data = await response.json();
+
+    document.getElementById("uploadStatus").innerText =
+        data.message;
+}
+
+
+async function askQuestion() {
+
+    const question = document.getElementById("question").value;
+
+    if (!question) {
+        alert("Please enter a question.");
+        return;
+    }
+
+    const response = await fetch("/ask", {
+
+        method: "POST",
+
+        headers: {
+            "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+            question: question
+        })
+
+    });
+
+    const data = await response.json();
+
+    const messages = document.getElementById("messages");
+
+    messages.innerHTML += `
+        <div class="question">
+            <b>You:</b> ${question}
+        </div>
+
+        <div class="answer">
+            <b>Bot:</b> ${data.answer}
+        </div>
+    `;
+
+    document.getElementById("question").value = "";
+}
+
+</script>
+
+</body>
+</html>
